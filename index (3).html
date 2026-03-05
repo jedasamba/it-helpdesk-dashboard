@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HelpDesk Pro — IT Support Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme="dark"] {
+      --bg: #0d0f14; --surface: #13161e; --surface2: #1a1e2a; --surface3: #222736; --border: #2a2f3d;
+      --text: #e8eaf0; --muted: #6b7280; --accent: #4f8ef7; --accent-glow: rgba(79,142,247,0.15);
+      --green: #22d3a0; --green-bg: rgba(34,211,160,0.1); --yellow: #f5c542; --yellow-bg: rgba(245,197,66,0.1);
+      --red: #f76f6f; --red-bg: rgba(247,111,111,0.1); --orange: #f79a4f; --orange-bg: rgba(247,154,79,0.1);
+      --overlay: rgba(0,0,0,0.65);
+    }
+    :root[data-theme="light"] {
+      --bg: #f0f2f7; --surface: #ffffff; --surface2: #f7f8fc; --surface3: #eef0f6; --border: #e2e5ef;
+      --text: #1a1e2a; --muted: #8892a4; --accent: #3a7af4; --accent-glow: rgba(58,122,244,0.1);
+      --green: #12b886; --green-bg: rgba(18,184,134,0.08); --yellow: #e6ac00; --yellow-bg: rgba(230,172,0,0.08);
+      --red: #e55353; --red-bg: rgba(229,83,83,0.08); --orange: #e8872a; --orange-bg: rgba(232,135,42,0.08);
+      --overlay: rgba(0,0,0,0.4);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'Outfit', sans-serif; font-weight: 400; background: var(--bg); color: var(--text); display: flex; transition: background 0.3s, color 0.3s; overflow: hidden; }
+
+    /* SIDEBAR */
+    .sidebar { width: 240px; height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; transition: background 0.3s; }
+    .sidebar-logo { padding: 1.4rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border); }
+    .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 0 16px var(--accent-glow); }
+    .logo-text { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.02em; }
+    .logo-text span { color: var(--accent); }
+    .sidebar-section { padding: 1.1rem 1rem 0.25rem; }
+    .sidebar-lbl { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 0 0.5rem; margin-bottom: 0.4rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.58rem 0.75rem; border-radius: 8px; cursor: pointer; font-size: 0.87rem; color: var(--muted); transition: all 0.2s; margin-bottom: 2px; user-select: none; }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--accent-glow); color: var(--accent); font-weight: 500; }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+    .nav-badge { margin-left: auto; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.55rem; background: var(--red-bg); color: var(--red); border-radius: 20px; }
+    .nav-badge.green { background: var(--green-bg); color: var(--green); }
+    .sidebar-bottom { margin-top: auto; padding: 1rem; border-top: 1px solid var(--border); }
+    .user-card { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+    .user-card:hover { background: var(--surface2); }
+    .user-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--green)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white; flex-shrink: 0; }
+    .user-name { font-size: 0.82rem; font-weight: 600; }
+    .user-role { font-size: 0.71rem; color: var(--muted); }
+
+    /* MAIN */
+    .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+    .topbar { position: sticky; top: 0; z-index: 50; background: var(--bg); border-bottom: 1px solid var(--border); padding: 0.85rem 2rem; display: flex; align-items: center; gap: 1rem; transition: background 0.3s; }
+    .topbar-title { font-size: 1rem; font-weight: 600; }
+    .topbar-sub { font-size: 0.77rem; color: var(--muted); margin-top: 1px; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 0.65rem; }
+    .icon-btn { width: 34px; height: 34px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; transition: all 0.2s; position: relative; }
+    .icon-btn:hover { border-color: var(--accent); background: var(--accent-glow); }
+    .notif-dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; background: var(--red); border-radius: 50%; }
+    .new-ticket-btn { display: inline-flex; align-items: center; gap: 0.4rem; font-family: 'Outfit', sans-serif; font-size: 0.82rem; font-weight: 600; padding: 0.55rem 1.1rem; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .new-ticket-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* CONTENT */
+    .content { padding: 1.5rem 2rem; flex: 1; }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; transition: border-color 0.2s, transform 0.2s; }
+    .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.65rem; }
+    .stat-label { font-size: 0.74rem; font-weight: 500; color: var(--muted); }
+    .stat-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-bottom: 0.3rem; }
+    .stat-sub { font-size: 0.73rem; color: var(--muted); }
+
+    /* TOOLBAR */
+    .toolbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .search-input { flex: 1; min-width: 200px; max-width: 300px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 1rem; font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: var(--text); outline: none; transition: border-color 0.2s; }
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: var(--accent); }
+    .filter-sel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.9rem; font-family: 'Outfit', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; cursor: pointer; transition: border-color 0.2s; }
+    .filter-sel:focus { border-color: var(--accent); }
+    .ticket-count { margin-left: auto; font-size: 0.78rem; color: var(--muted); }
+    .ticket-count span { color: var(--text); font-weight: 600; }
+
+    /* TABLE */
+    .tickets-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .ticket-table { width: 100%; border-collapse: collapse; }
+    .ticket-table th { text-align: left; font-size: 0.67rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    .ticket-table td { padding: 0.85rem 1.1rem; font-size: 0.82rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .ticket-row { transition: background 0.15s; }
+    .ticket-row:hover td { background: var(--surface2); }
+    .ticket-row:last-child td { border-bottom: none; }
+    .ticket-row.flash-green { animation: flashGreen 0.5s ease; }
+    @keyframes flashGreen { 0%,100%{background:transparent} 30%{background:rgba(34,211,160,0.12)} }
+    .ticket-row.flash-out { animation: flashOut 0.3s ease forwards; }
+    @keyframes flashOut { to { opacity:0; transform:translateX(20px); } }
+    .ticket-id { font-family: 'IBM Plex Mono', monospace; font-size: 0.73rem; color: var(--accent); font-weight: 500; }
+    .t-title { font-weight: 500; margin-bottom: 2px; }
+    .t-desc { font-size: 0.74rem; color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; font-weight: 600; padding: 0.22rem 0.6rem; border-radius: 20px; white-space: nowrap; }
+    .p-critical{background:var(--red-bg);color:var(--red)} .p-high{background:var(--orange-bg);color:var(--orange)}
+    .p-medium{background:var(--yellow-bg);color:var(--yellow)} .p-low{background:var(--green-bg);color:var(--green)}
+    .s-open{background:var(--accent-glow);color:var(--accent)} .s-progress{background:var(--yellow-bg);color:var(--yellow)}
+    .s-resolved{background:var(--green-bg);color:var(--green)} .s-closed{background:var(--surface3);color:var(--muted)}
+    .status-btn { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; font-weight: 600; padding: 0.22rem 0.65rem; border-radius: 20px; cursor: pointer; border: none; transition: opacity 0.2s, transform 0.15s; white-space: nowrap; }
+    .status-btn:hover { opacity: 0.72; transform: scale(0.96); }
+    .status-btn:active { transform: scale(0.9); }
+    .action-btns { display: flex; gap: 0.4rem; }
+    .act-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; cursor: pointer; border: 1px solid var(--border); background: transparent; transition: all 0.2s; }
+    .act-btn.del:hover { border-color: var(--red); background: var(--red-bg); }
+    .act-btn.edit:hover { border-color: var(--accent); background: var(--accent-glow); }
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; z-index: 200; background: var(--overlay); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 520px; padding: 2rem; margin: 1rem; transform: translateY(16px) scale(0.98); transition: transform 0.25s; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .modal-title { font-size: 1rem; font-weight: 700; }
+    .modal-close { width: 30px; height: 30px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+    .modal-close:hover { background: var(--red-bg); border-color: var(--red); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-field.full { grid-column: span 2; }
+    .form-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .form-input, .form-select, .form-textarea { font-family: 'Outfit', sans-serif; font-size: 0.88rem; padding: 0.7rem 0.9rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; transition: border-color 0.2s; width: 100%; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-input.error, .form-select.error { border-color: var(--red); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; }
+    .btn-cancel { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 500; padding: 0.65rem 1.4rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+    .btn-cancel:hover { border-color: var(--text); color: var(--text); }
+    .btn-submit { font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 600; padding: 0.65rem 1.6rem; background: var(--accent); border: none; border-radius: 8px; color: white; cursor: pointer; transition: all 0.2s; }
+    .btn-submit:hover { opacity: 0.85; }
+
+    /* TOAST */
+    .toast-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 300; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 0.82rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.25); animation: tIn 0.3s ease; min-width: 230px; }
+    @keyframes tIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .toast.out { animation: tOut 0.3s ease forwards; }
+    @keyframes tOut { to{opacity:0;transform:translateY(8px)} }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    @media(max-width:900px) { .sidebar{display:none} .stats-grid{grid-template-columns:1fr 1fr} .content{padding:1rem} }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🖥️</div>
+    <div class="logo-text">HelpDesk<span>Pro</span></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-lbl">Main</div>
+    <div class="nav-item active"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">🎫</span> All Tickets <span class="nav-badge" id="sideOpen">0</span></div>
+    <div class="nav-item"><span class="nav-icon">🔔</span> Alerts <span class="nav-badge">3</span></div>
+    <div class="nav-item"><span class="nav-icon">📋</span> My Queue</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-lbl">Tools</div>
+    <div class="nav-item"><span class="nav-icon">👥</span> Agents</div>
+    <div class="nav-item"><span class="nav-icon">📦</span> Assets <span class="nav-badge green">New</span></div>
+    <div class="nav-item"><span class="nav-icon">🗂️</span> Knowledge Base</div>
+    <div class="nav-item"><span class="nav-icon">📈</span> Reports</div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span> Settings</div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar">JA</div>
+      <div><div class="user-name">Jed Asamba</div><div class="user-role">IT Support Admin</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">IT Help Desk Dashboard</div>
+      <div class="topbar-sub" id="dateLabel"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="icon-btn" id="themeBtn" title="Toggle theme">🌙</div>
+      <div class="icon-btn">🔔<div class="notif-dot"></div></div>
+      <button class="new-ticket-btn" id="openModal">＋ New Ticket</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header"><div class="stat-label">Total Tickets</div><div class="stat-icon" style="background:var(--accent-glow)">🎫</div></div>
+        <div class="stat-value" id="sTotal">0</div><div class="stat-sub">All tickets</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><div class="stat-label">Open</div><div class="stat-icon" style="background:var(--accent-glow)">📂</div></div>
+        <div class="stat-value" id="sOpen" style="color:var(--accent)">0</div><div class="stat-sub">Awaiting action</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><div class="stat-label">In Progress</div><div class="stat-icon" style="background:var(--yellow-bg)">⚙️</div></div>
+        <div class="stat-value" id="sProgress" style="color:var(--yellow)">0</div><div class="stat-sub">Being worked on</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header"><div class="stat-label">Resolved</div><div class="stat-icon" style="background:var(--green-bg)">✅</div></div>
+        <div class="stat-value" id="sResolved" style="color:var(--green)">0</div><div class="stat-sub">Completed</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <input class="search-input" id="searchInput" type="text" placeholder="🔍  Search by title, ID or assignee…"/>
+      <select class="filter-sel" id="fStatus">
+        <option value="">All Statuses</option>
+        <option>Open</option><option>In Progress</option><option>Resolved</option><option>Closed</option>
+      </select>
+      <select class="filter-sel" id="fPriority">
+        <option value="">All Priorities</option>
+        <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+      </select>
+      <div class="ticket-count">Showing <span id="vCount">0</span> of <span id="tCount">0</span></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="tickets-panel">
+      <table class="ticket-table">
+        <thead><tr>
+          <th>ID</th><th>Issue</th><th>Priority</th><th>Status — click to advance</th><th>Assignee</th><th>Created</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty-state" id="empty" style="display:none">
+        <div class="empty-icon">🔍</div>
+        <div>No tickets match your filters.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Create New Ticket</div>
+      <div class="modal-close" id="closeModal">✕</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field full">
+        <label class="form-label">Issue Title *</label>
+        <input class="form-input" id="fTitle" type="text" placeholder="e.g. Printer not responding — Finance Dept"/>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="fDesc" placeholder="Describe the issue…"></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Priority *</label>
+        <select class="form-select" id="fPri">
+          <option value="">Select priority</option>
+          <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="fCat">
+          <option>Network</option><option>Hardware</option><option>Software</option>
+          <option>Security</option><option>Email</option><option>Account</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label class="form-label">Assigned To</label>
+        <select class="form-select" id="fAgent">
+          <option>Jed Asamba</option><option>Aisha Otieno</option>
+          <option>Brian Mwangi</option><option>Faith Kamau</option><option>David Ouma</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      <button class="btn-submit" id="submitBtn">Create Ticket</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+  // DATA
+  let tickets = [
+    {id:'TKT-0091',title:'Network switch failure — Block C',desc:'Entire floor offline, 23 users affected',priority:'Critical',status:'In Progress',assignee:'Jed Asamba',created:'2h ago',category:'Network'},
+    {id:'TKT-0090',title:'Printer not responding — Finance Dept',desc:'HP LaserJet offline since morning',priority:'High',status:'Open',assignee:'Aisha Otieno',created:'4h ago',category:'Hardware'},
+    {id:'TKT-0089',title:'Password reset request — Staff portal',desc:'User locked out after 5 failed attempts',priority:'Medium',status:'Resolved',assignee:'Brian Mwangi',created:'5h ago',category:'Account'},
+    {id:'TKT-0088',title:'Software installation — MS Office 365',desc:'New staff onboarding, 4 machines',priority:'Low',status:'Resolved',assignee:'Faith Kamau',created:'Yesterday',category:'Software'},
+    {id:'TKT-0087',title:'Email not syncing — Outlook desktop',desc:'Exchange server connection issue',priority:'High',status:'Open',assignee:'David Ouma',created:'Yesterday',category:'Email'},
+    {id:'TKT-0086',title:'Laptop overheating — HR department',desc:'Dell Latitude fan noise, thermal throttling',priority:'Medium',status:'Open',assignee:'Jed Asamba',created:'2 days ago',category:'Hardware'},
+    {id:'TKT-0085',title:'VPN access not working — Remote staff',desc:'3 remote employees cannot connect',priority:'High',status:'In Progress',assignee:'Aisha Otieno',created:'2 days ago',category:'Network'},
+  ];
+  let counter = 92;
+  let editingId = null;
+
+  const statusCycle = {'Open':'In Progress','In Progress':'Resolved','Resolved':'Closed','Closed':'Open'};
+  const statusCls   = {'Open':'s-open','In Progress':'s-progress','Resolved':'s-resolved','Closed':'s-closed'};
+  const statusIcon  = {'Open':'○','In Progress':'⟳','Resolved':'✓','Closed':'✕'};
+  const priCls      = {'Critical':'p-critical','High':'p-high','Medium':'p-medium','Low':'p-low'};
+  const avatarCol   = {'Jed Asamba':'#4f8ef7','Aisha Otieno':'#22d3a0','Brian Mwangi':'#f5c542','Faith Kamau':'#f76f6f','David Ouma':'#a78bfa'};
+  const ini = n => n.split(' ').map(x=>x[0]).join('').slice(0,2);
+
+  function filtered() {
+    const q  = document.getElementById('searchInput').value.toLowerCase();
+    const fs = document.getElementById('fStatus').value;
+    const fp = document.getElementById('fPriority').value;
+    return tickets.filter(t =>
+      (!q  || t.title.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.assignee.toLowerCase().includes(q)) &&
+      (!fs || t.status   === fs) &&
+      (!fp || t.priority === fp)
+    );
+  }
+
+  function render() {
+    // stats
+    document.getElementById('sTotal').textContent    = tickets.length;
+    document.getElementById('sOpen').textContent     = tickets.filter(t=>t.status==='Open').length;
+    document.getElementById('sProgress').textContent = tickets.filter(t=>t.status==='In Progress').length;
+    document.getElementById('sResolved').textContent = tickets.filter(t=>t.status==='Resolved').length;
+    document.getElementById('sideOpen').textContent  = tickets.filter(t=>t.status==='Open').length;
+
+    const list = filtered();
+    document.getElementById('vCount').textContent = list.length;
+    document.getElementById('tCount').textContent = tickets.length;
+
+    const tbody = document.getElementById('tbody');
+    const empty = document.getElementById('empty');
+    tbody.innerHTML = '';
+
+    if (!list.length) { empty.style.display='block'; return; }
+    empty.style.display='none';
+
+    list.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.className = 'ticket-row';
+      tr.dataset.id = t.id;
+      tr.innerHTML = `
+        <td><div class="ticket-id">#${t.id}</div></td>
+        <td><div class="t-title">${t.title}</div><div class="t-desc">${t.desc}</div></td>
+        <td><span class="badge ${priCls[t.priority]}">● ${t.priority}</span></td>
+        <td><button class="status-btn badge ${statusCls[t.status]}" data-id="${t.id}">${statusIcon[t.status]} ${t.status}</button></td>
+        <td><div style="display:flex;align-items:center;gap:.5rem">
+          <div style="width:24px;height:24px;border-radius:50%;background:${avatarCol[t.assignee]||'#888'};display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:white;flex-shrink:0">${ini(t.assignee)}</div>
+          <span style="font-size:.8rem">${t.assignee}</span></div></td>
+        <td style="color:var(--muted);font-size:.78rem;white-space:nowrap">${t.created}</td>
+        <td><div class="action-btns">
+          <div class="act-btn edit" data-edit="${t.id}" title="Edit">✏️</div>
+          <div class="act-btn del"  data-del="${t.id}"  title="Delete">🗑️</div>
+        </div></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // STATUS CYCLE
+  document.getElementById('tbody').addEventListener('click', e => {
+    const sb = e.target.closest('.status-btn');
+    if (sb) {
+      const id = sb.dataset.id;
+      const t  = tickets.find(x=>x.id===id);
+      if (!t) return;
+      t.status = statusCycle[t.status];
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      row.classList.add('flash-green');
+      setTimeout(()=>row.classList.remove('flash-green'),500);
+      toast(`${id} → <strong>${t.status}</strong>`, t.status==='Resolved'?'✅':t.status==='In Progress'?'⚙️':'🔄');
+      render();
+    }
+
+    const del = e.target.closest('[data-del]');
+    if (del) {
+      const id  = del.dataset.del;
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      row.classList.add('flash-out');
+      setTimeout(()=>{ tickets = tickets.filter(x=>x.id!==id); toast(`Ticket #${id} deleted`,'🗑️','red'); render(); },300);
+    }
+
+    const edit = e.target.closest('[data-edit]');
+    if (edit) {
+      const id = edit.dataset.edit;
+      const t  = tickets.find(x=>x.id===id);
+      editingId = id;
+      document.getElementById('fTitle').value = t.title;
+      document.getElementById('fDesc').value  = t.desc;
+      document.getElementById('fPri').value   = t.priority;
+      document.getElementById('fCat').value   = t.category||'Network';
+      document.getElementById('fAgent').value = t.assignee;
+      document.getElementById('modalTitle').textContent = `Edit Ticket #${id}`;
+      document.getElementById('submitBtn').textContent  = 'Save Changes';
+      document.getElementById('overlay').classList.add('open');
+    }
+  });
+
+  // SUBMIT
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const title = document.getElementById('fTitle').value.trim();
+    const pri   = document.getElementById('fPri').value;
+    let ok = true;
+    if (!title) { document.getElementById('fTitle').classList.add('error'); ok=false; } else document.getElementById('fTitle').classList.remove('error');
+    if (!pri)   { document.getElementById('fPri').classList.add('error');   ok=false; } else document.getElementById('fPri').classList.remove('error');
+    if (!ok) return;
+
+    if (editingId) {
+      const t = tickets.find(x=>x.id===editingId);
+      t.title=title; t.desc=document.getElementById('fDesc').value.trim();
+      t.priority=pri; t.category=document.getElementById('fCat').value;
+      t.assignee=document.getElementById('fAgent').value;
+      toast(`Ticket #${editingId} updated`,'✏️');
+    } else {
+      const nid = 'TKT-0'+counter++;
+      tickets.unshift({id:nid,title,desc:document.getElementById('fDesc').value.trim()||'No description.',priority:pri,status:'Open',assignee:document.getElementById('fAgent').value,created:'Just now',category:document.getElementById('fCat').value});
+      toast(`Ticket #${nid} created!`,'🎫');
+    }
+    closeModal(); render();
+  });
+
+  // MODAL
+  function openModal() {
+    editingId=null;
+    ['fTitle','fDesc'].forEach(id=>{ document.getElementById(id).value=''; document.getElementById(id).classList.remove('error'); });
+    document.getElementById('fPri').value=''; document.getElementById('fPri').classList.remove('error');
+    document.getElementById('fCat').value='Network'; document.getElementById('fAgent').value='Jed Asamba';
+    document.getElementById('modalTitle').textContent='Create New Ticket';
+    document.getElementById('submitBtn').textContent='Create Ticket';
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+  document.getElementById('openModal').addEventListener('click', openModal);
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  document.getElementById('overlay').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
+
+  // FILTERS
+  ['searchInput','fStatus','fPriority'].forEach(id => document.getElementById(id).addEventListener('input',render));
+  document.getElementById('fStatus').addEventListener('change',render);
+  document.getElementById('fPriority').addEventListener('change',render);
+
+  // THEME
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    const dark = document.documentElement.getAttribute('data-theme')==='dark';
+    document.documentElement.setAttribute('data-theme', dark?'light':'dark');
+    this.textContent = dark?'☀️':'🌙';
+  });
+
+  // NAV
+  document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click',function(){
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    this.classList.add('active');
+  }));
+
+  // TOAST
+  function toast(msg, icon='ℹ️', type='') {
+    const c = document.getElementById('toasts');
+    const t = document.createElement('div');
+    t.className='toast';
+    if(type==='red') t.style.borderColor='var(--red)';
+    t.innerHTML=`<span>${icon}</span><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),300); },2500);
+  }
+
+  // DATE
+  document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  render();
+</script>
+</body>
+</html>
